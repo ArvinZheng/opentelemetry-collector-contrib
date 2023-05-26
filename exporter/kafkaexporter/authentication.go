@@ -22,6 +22,7 @@ import (
 	"github.com/Shopify/sarama"
 	"go.opentelemetry.io/collector/config/configtls"
 
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/kafkaexporter/ims"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/kafkaexporter/internal/awsmsk"
 )
 
@@ -31,6 +32,7 @@ type Authentication struct {
 	SASL      *SASLConfig                 `mapstructure:"sasl"`
 	TLS       *configtls.TLSClientSetting `mapstructure:"tls"`
 	Kerberos  *KerberosConfig             `mapstructure:"kerberos"`
+	IMSSASL   *IMSSASLConfig              `mapstructure:"imssasl"`
 }
 
 // PlainTextConfig defines plaintext authentication.
@@ -71,6 +73,16 @@ type KerberosConfig struct {
 	KeyTabPath  string `mapstructure:"keytab_file"`
 }
 
+// IMSSASLConfig defines the configuration we need for Adobe IMS OAuth
+type IMSSASLConfig struct {
+	// Client Id to be used on authentication
+	ClientId string `mapstructure:"client_id"`
+	// Client secret to be used on authentication
+	ClientSecret string `mapstructure:"client_secret"`
+	// URL to be used for generating and refreshing token
+	TokenURL string `mapstructure:"token_url"`
+}
+
 // ConfigureAuthentication configures authentication in sarama.Config.
 func ConfigureAuthentication(config Authentication, saramaConfig *sarama.Config) error {
 	if config.PlainText != nil {
@@ -86,9 +98,11 @@ func ConfigureAuthentication(config Authentication, saramaConfig *sarama.Config)
 			return err
 		}
 	}
-
 	if config.Kerberos != nil {
 		configureKerberos(*config.Kerberos, saramaConfig)
+	}
+	if config.IMSSASL != nil {
+		configureIMSSASL(*config.IMSSASL, saramaConfig)
 	}
 	return nil
 }
@@ -158,4 +172,11 @@ func configureKerberos(config KerberosConfig, saramaConfig *sarama.Config) {
 	saramaConfig.Net.SASL.GSSAPI.Username = config.Username
 	saramaConfig.Net.SASL.GSSAPI.Realm = config.Realm
 	saramaConfig.Net.SASL.GSSAPI.ServiceName = config.ServiceName
+}
+
+func configureIMSSASL(config IMSSASLConfig, saramaConfig *sarama.Config) error {
+	saramaConfig.Net.SASL.Enable = true
+	saramaConfig.Net.SASL.Mechanism = sarama.SASLTypeOAuth
+	saramaConfig.Net.SASL.TokenProvider = ims.NewTokenProvider(config.ClientId, config.ClientSecret, config.TokenURL)
+	return nil
 }

@@ -21,6 +21,7 @@ require (
 	go.opentelemetry.io/collector/semconv v0.75.0
 	go.uber.org/multierr v1.10.0
 	go.uber.org/zap v1.24.0
+	golang.org/x/oauth2 v0.4.0
 )
 
 require (
@@ -67,6 +68,7 @@ require (
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 	google.golang.org/grpc v1.54.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
