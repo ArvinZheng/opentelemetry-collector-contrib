@@ -139,7 +139,7 @@ func configureSASL(config SASLConfig, saramaConfig *sarama.Config) error {
 func configureIMSSASL(config IMSSASLConfig, saramaConfig *sarama.Config) error {
 	saramaConfig.Net.SASL.Enable = true
 	saramaConfig.Net.SASL.Mechanism = sarama.SASLTypeOAuth
-	saramaConfig.Net.SASL.TokenProvider = ims.CreateTokenProvider(config.ClientId, config.ClientSecret, config.TokenURL)
+	saramaConfig.Net.SASL.TokenProvider = ims.NewTokenProvider(config.ClientId, config.ClientSecret, config.TokenURL)
 	return nil
 }
 
